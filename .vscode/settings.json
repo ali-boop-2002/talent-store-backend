@@ -1,0 +1,25 @@
+{
+  "debug.node.autoAttach": "on",
+  "debug.terminal.clearBeforeReusing": true,
+  "debug.console.fontSize": 14,
+  "debug.console.wordWrap": true,
+  "debug.showBreakpointsInOverviewRuler": true,
+  "debug.showInlineBreakpointCandidates": true,
+  "javascript.preferences.includePackageJsonAutoImports": "on",
+  "node.autoAttach": "on",
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/logs": false,
+    "**/storage": false
+  },
+  "debug.allowBreakpointsEverywhere": true,
+  "terminal.integrated.env.windows": {
+    "NODE_ENV": "development"
+  },
+  "terminal.integrated.env.linux": {
+    "NODE_ENV": "development"
+  },
+  "terminal.integrated.env.osx": {
+    "NODE_ENV": "development"
+  }
+}

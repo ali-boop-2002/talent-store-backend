@@ -1,0 +1,99 @@
+Talent Reviews (Frontend Integration Guide)
+
+Goal
+- Enable CLIENT users to submit reviews for a TALENT after a job/contract is completed.
+
+When to show the review UI
+- Only after the job/contract is completed.
+- Recommended checks on the frontend before rendering the form:
+  - Contract.status === "COMPLETED" OR Job.status === "COMPLETED" (based on your UI state).
+  - Ensure you have: client userId (current logged-in user), talentId, jobId.
+
+API base and CORS
+- Server mounts review routes at: /api
+- Local dev CORS origin allowed: http://localhost:3001
+- Auth supports either:
+  1) HttpOnly cookie named authToken (use fetch/axios with credentials), or
+  2) Authorization header: "Bearer <JWT>"
+
+Create Review (CLIENT only)
+- Method: POST
+- URL: /api/createReview
+- Auth required: Yes (role must be CLIENT)
+- Headers when using header-based auth:
+  - Content-Type: application/json
+  - Authorization: Bearer <JWT>
+- Request body (all fields required):
+  {
+    "userId": "<clientUserId>",
+    "talentId": "<talentUserId>",
+    "rating": <number 1-5>,
+    "review": "<text>",
+    "jobId": "<jobId>"
+  }
+- Notes:
+  - rating is a number; backend stores it as an integer.
+  - jobId is unique in reviews (one review per job). Re-posting for the same job will fail.
+- Success response (200):
+  {
+    "newReview": {
+      "id": "...",
+      "userId": "...",
+      "talentId": "...",
+      "rating": 5,
+      "jobId": "...",
+      "review": "...",
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  }
+- Error handling guidance:
+  - 401/403: Not authenticated/authorized (ensure CLIENT role and valid token).
+  - 500 with unique constraint details: treat as "already reviewed this job" and disable the form.
+
+Get Reviews for a Talent (TALENT only)
+- Method: GET
+- URL: /api/getAllReviewsForTalent/:talentId
+- Auth required: Yes (role must be TALENT)
+- Response (200): { reviews: Review[], averageRating: number }
+- Intended for the talent to view their own reviews. Not accessible to CLIENTs.
+
+Frontend flow (recommended)
+1) Gate the review form behind your completed job/contract state.
+2) Collect inputs: rating (1-5) and review text (min length as you prefer).
+3) Submit POST /api/createReview with userId (client), talentId, jobId, rating, review.
+4) On 200, show success state and disable further submissions for that job.
+5) If server returns 500 due to unique constraint, show a friendly "You already reviewed this job" message.
+
+Examples
+- fetch with cookie-based auth (HttpOnly authToken):
+  fetch("/api/createReview", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, talentId, rating, review, jobId })
+  })
+
+- fetch with Authorization header:
+  fetch("/api/createReview", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ userId, talentId, rating, review, jobId })
+  })
+
+UI hints
+- Disable submit until rating is selected and review has content.
+- Optimistically update local UI, then reconcile on response.
+- Prevent double-submits by disabling the button while the request is in flight.
+
+Backend reference (for context)
+- POST /api/createReview → requires CLIENT role, validates payload, creates Review, returns { newReview }.
+- GET /api/getAllReviewsForTalent/:talentId → requires TALENT role, returns { reviews, averageRating }.
+
+
+
+
+

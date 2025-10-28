@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Express Server",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/src/server.ts",
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["--require", "ts-node/register"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "NODE_ENV": "development",
+        "DATABASE_URL": "your_database_url_here",
+        "STRIPE_SECRET_KEY": "your_stripe_secret_key_here",
+        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "your_publishable_key_here"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "outFiles": ["${workspaceFolder}/src/**/*.ts"]
+    }
+  ]
+}
