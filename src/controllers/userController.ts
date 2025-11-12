@@ -274,8 +274,8 @@ const loginUser = async (req: Request, res: Response) => {
     // Set JWT token as HTTP-only cookie
     res.cookie("authToken", token, {
       httpOnly: true, // Can't be accessed by JavaScript (prevents XSS)
-      secure: process.env.NODE_ENV === "production", // Only sent over HTTPS in production
-      sameSite: "strict", // CSRF protection
+      secure: false, // Only sent over HTTPS in production
+      sameSite: "lax", // CSRF protection
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
       path: "/", // Available for all routes
     });
