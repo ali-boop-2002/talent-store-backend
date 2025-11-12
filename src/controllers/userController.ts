@@ -273,11 +273,11 @@ const loginUser = async (req: Request, res: Response) => {
 
     // Set JWT token as HTTP-only cookie
     res.cookie("authToken", token, {
-      httpOnly: true, // Can't be accessed by JavaScript (prevents XSS)
-      secure: false, // Only sent over HTTPS in production
-      sameSite: "lax", // CSRF protection
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-      path: "/", // Available for all routes
+      httpOnly: true, // Prevents XSS
+      secure: true, // HTTPS only in production
+      sameSite: "none", // "none" for cross-domain production
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
     });
 
     // Return user data (no token in response body)
@@ -308,8 +308,8 @@ const logoutUser = async (req: Request, res: Response) => {
     // Clear the auth cookie
     res.clearCookie("authToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       path: "/",
     });
 
