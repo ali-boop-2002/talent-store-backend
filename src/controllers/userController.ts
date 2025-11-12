@@ -231,7 +231,6 @@ const loginUser = async (req: Request, res: Response) => {
         email: validatedData.email,
       },
     });
-    console.log("user", user);
 
     if (!user) {
       return res.status(401).json({
@@ -271,26 +270,16 @@ const loginUser = async (req: Request, res: Response) => {
       process.env.JWT_SECRET!,
       { expiresIn: "7d" } // Token expires in 7 days
     );
-    console.log("token", token);
 
     // Set JWT token as HTTP-only cookie
     res.cookie("authToken", token, {
       httpOnly: true, // Can't be accessed by JavaScript (prevents XSS)
-      secure: true, // Only sent over HTTPS in production
+      secure: false, // Only sent over HTTPS in production
       sameSite: "lax", // CSRF protection
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
       path: "/", // Available for all routes
     });
-    console.log(
-      "cookie",
-      res.cookie("authToken", token, {
-        httpOnly: true, // Can't be accessed by JavaScript (prevents XSS)
-        secure: true, // Only sent over HTTPS in production
-        sameSite: "lax", // CSRF protection
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-        path: "/", // Available for all routes
-      })
-    );
+
     // Return user data (no token in response body)
     res.status(200).json({
       message: "Login successful",
