@@ -32,15 +32,6 @@ export const authenticateToken = async (
     // Check if user still exists in database and fetch full user object
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isVerified: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
 
     if (!user) {
