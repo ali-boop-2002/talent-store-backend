@@ -231,6 +231,7 @@ const loginUser = async (req: Request, res: Response) => {
         email: validatedData.email,
       },
     });
+    console.log("user", user);
 
     if (!user) {
       return res.status(401).json({
