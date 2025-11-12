@@ -32,6 +32,15 @@ export const authenticateToken = async (
     // Check if user still exists in database and fetch full user object
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
+      // select: {
+      //   id: true,
+      //   name: true,
+      //   email: true,
+      //   role: true,
+      //   isVerified: true,
+      //   createdAt: true,
+      //   updatedAt: true,
+      // },
     });
 
     if (!user) {
@@ -110,13 +119,13 @@ export const requireOwnership = (userIdParam: string = "userId") => {
 };
 
 // Optional: Rate limiting for auth endpoints
-export const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 5 requests per windowMs
-  message: {
-    error: "Too many authentication attempts",
-    message: "Please try again later",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// export const authRateLimit = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 10, // limit each IP to 5 requests per windowMs
+//   message: {
+//     error: "Too many authentication attempts",
+//     message: "Please try again later",
+//   },
+//   standardHeaders: true,
+//   legacyHeaders: false,
+// });

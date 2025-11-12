@@ -15,7 +15,7 @@ import { upload } from "../middleware/upload";
 import {
   authenticateToken,
   requireRole,
-  authRateLimit,
+  // authRateLimit,
 } from "../middleware/auth";
 
 const router = express.Router();
@@ -31,7 +31,7 @@ router.post("/test", (req, res) => {
 
 // Public routes (no authentication required)
 router.post("/register", registerUser);
-router.post("/login", authRateLimit, loginUser); // Rate limited login
+router.post("/login", loginUser); // Rate limited login
 router.post("/logout", logoutUser); // Logout (clears cookie)
 
 // Protected routes (authentication required)
