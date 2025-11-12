@@ -24,8 +24,13 @@ const createJobSchema = z.object({
 
 const createJob = async (req: Request, res: Response) => {
   try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const validatedData = createJobSchema.parse({
-      clientId: req.user.id as string,
+      clientId: userId,
       ...req.body,
     });
 

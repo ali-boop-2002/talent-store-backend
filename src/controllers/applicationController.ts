@@ -1,13 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
 import { z } from "zod";
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
-}
+
 const applyForJobSchema = z.object({
   jobId: z.string().min(1, "Job ID is required"),
 
@@ -17,7 +11,7 @@ const applyForJobSchema = z.object({
   keysUsed: z.number().min(1, "Keys used is required"),
 });
 
-const applyForJob = async (req: AuthRequest, res: Response) => {
+const applyForJob = async (req: Request, res: Response) => {
   try {
     const { jobId, coverLetter, proposedRate, timeline, keysUsed } =
       applyForJobSchema.parse(req.body);
@@ -128,7 +122,7 @@ const getApplicationsForTalent = async (req: Request, res: Response) => {
   }
 };
 
-const getApplications = async (req: AuthRequest, res: Response) => {
+const getApplications = async (req: Request, res: Response) => {
   try {
     const applications = await prisma.application.findMany();
     return res.status(200).json({ applications });
@@ -140,7 +134,7 @@ const getApplications = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const getApplicationByJobId = async (req: AuthRequest, res: Response) => {
+const getApplicationByJobId = async (req: Request, res: Response) => {
   try {
     const { jobId } = req.params;
     if (!jobId) {
@@ -164,7 +158,7 @@ const getApplicationByJobId = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const updateApplicationStatus = async (req: AuthRequest, res: Response) => {
+const updateApplicationStatus = async (req: Request, res: Response) => {
   try {
     const { status } = req.body;
     const { applicationId } = req.params;
@@ -198,7 +192,7 @@ const updateApplicationStatus = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const withdrawApplication = async (req: AuthRequest, res: Response) => {
+const withdrawApplication = async (req: Request, res: Response) => {
   try {
     const { applicationId } = req.params;
     if (!applicationId) {

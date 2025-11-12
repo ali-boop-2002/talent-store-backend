@@ -18,15 +18,6 @@ import {
   authRateLimit,
 } from "../middleware/auth";
 
-// Import the AuthRequest type
-interface AuthRequest extends express.Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
-}
-
 const router = express.Router();
 
 // Test endpoint to verify JSON parsing
@@ -56,13 +47,16 @@ router.post("/create-gig", authenticateToken, createGig); // Create a gig
 router.get("/all-users", getAllUsers); // Get all users
 router.get("/user/:id", authenticateToken, getUserById); // Get user by id
 // Protected routes (authentication required)
-router.get("/auth-check", authenticateToken, (req: AuthRequest, res) => {
+router.get("/auth-check", authenticateToken, (req: express.Request, res) => {
+  if (!req.user) {
+    return res.status(401).json({ authenticated: false });
+  }
   res.json({
     authenticated: true,
     user: {
-      id: req.user!.id,
-      email: req.user!.email,
-      role: req.user!.role,
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
     },
   });
 });

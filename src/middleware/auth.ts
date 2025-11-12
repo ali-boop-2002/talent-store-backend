@@ -4,16 +4,8 @@ import { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import prisma from "../config/db";
 
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
-}
-
 export const authenticateToken = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -37,15 +29,9 @@ export const authenticateToken = async (
     // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
 
-    // Check if user still exists in database
+    // Check if user still exists in database and fetch full user object
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        isVerified: true,
-      },
     });
 
     if (!user) {
@@ -55,12 +41,8 @@ export const authenticateToken = async (
       });
     }
 
-    // Attach user info to request
-    req.user = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    };
+    // Attach full user object to request
+    req.user = user;
 
     next();
   } catch (error) {
@@ -76,7 +58,7 @@ export const authenticateToken = async (
 
 // Role-based middleware
 export const requireRole = (roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         error: "Insufficient permissions",
@@ -89,7 +71,7 @@ export const requireRole = (roles: string[]) => {
 
 // Optional: Check if user is verified
 export const requireVerified = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -107,7 +89,7 @@ export const requireVerified = (
 
 // Optional: Check if user owns the resource
 export const requireOwnership = (userIdParam: string = "userId") => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({
         error: "Authentication required",

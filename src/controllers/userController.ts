@@ -76,6 +76,7 @@ const registerUser = async (req: Request, res: Response) => {
       data: {
         ...validatedData,
         password: hashedPassword, // Store hashed password, not plain text
+        skills: validatedData.skills || undefined, // Convert null to undefined for Prisma
       },
       select: {
         id: true,
@@ -127,7 +128,7 @@ const gigSchema = z.object({
 const createGig = async (req: Request, res: Response) => {
   try {
     const validatedData = gigSchema.parse(req.body);
-    const userId = (req as any).user?.id;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
     }
@@ -149,17 +150,22 @@ const updateUser = async (req: Request, res: Response) => {
     const validatedData = updateUserSchema.parse(req.body);
 
     // Get user ID from authenticated user (set by auth middleware)
-    const userId = (req as any).user?.id;
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
     }
 
+    // Filter out undefined values - Prisma doesn't accept undefined in updates
+    const dataToUpdate = Object.fromEntries(
+      Object.entries(validatedData).filter(([, value]) => value !== undefined)
+    );
+
     const user = await prisma.user.update({
       where: {
         id: userId,
       },
-      data: validatedData,
+      data: dataToUpdate,
       select: {
         email: true,
         name: true,
@@ -328,8 +334,13 @@ const getUsersBySkills = async (req: Request, res: Response) => {
       });
     }
 
-    // Convert skills to array if it's a string
-    const skillsArray = Array.isArray(skills) ? skills : [skills];
+    // Convert skills to array of strings
+    let skillsArray: string[];
+    if (Array.isArray(skills)) {
+      skillsArray = skills.map((s) => String(s));
+    } else {
+      skillsArray = [String(skills)];
+    }
 
     // Find users who have any of the specified skills
     const users = await prisma.user.findMany({

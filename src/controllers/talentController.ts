@@ -50,22 +50,26 @@ type UserProfile = z.infer<typeof userProfileSchema>;
 const updateTalentProfile = async (req: Request, res: Response) => {
   try {
     const validatedData = userProfileSchema.parse(req.body);
-
-    const { id } = req.user as { id: string };
+    const id = req.user?.id;
 
     if (!id) {
       return res.status(400).json({ message: "ID is required" });
     }
     const findTalent = await prisma.user.findUnique({
-      where: { id: id as string },
+      where: { id },
     });
     if (!findTalent) {
       return res.status(400).json({ message: "Talent not found" });
     }
 
+    // Filter out undefined values - Prisma doesn't accept undefined in updates
+    const dataToUpdate = Object.fromEntries(
+      Object.entries(validatedData).filter(([, value]) => value !== undefined)
+    );
+
     const talent = await prisma.user.update({
-      where: { id: id as string },
-      data: validatedData as UserProfile,
+      where: { id },
+      data: dataToUpdate,
     });
 
     res.status(200).json({ talent });
@@ -301,7 +305,11 @@ const uploadPortfolio = async (req: Request, res: Response) => {
 const deletePortfolio = async (req: Request, res: Response) => {
   try {
     const { portfolioUrls } = req.body;
-    const userId = req.user as string;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     if (!portfolioUrls) {
       return res.status(400).json({ error: "Portfolio URL is required" });

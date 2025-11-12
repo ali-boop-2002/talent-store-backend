@@ -1,20 +1,12 @@
 import prisma from "../config/db";
 import { Request, Response } from "express";
-import { User } from "@prisma/client";
 import z from "zod";
 
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
-}
 const sendMessageSchema = z.object({
   message: z.string().min(1, "Message is required"),
 });
 
-const sendMessage = async (req: AuthRequest, res: Response) => {
+const sendMessage = async (req: Request, res: Response) => {
   try {
     const { message } = sendMessageSchema.parse(req.body);
     const { receiverId } = req.params;
@@ -26,7 +18,10 @@ const sendMessage = async (req: AuthRequest, res: Response) => {
         .status(400)
         .json({ message: "You cannot send a message to yourself" });
     }
-    const { id } = req.user as User;
+    const id = req.user?.id;
+    if (!id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     const sender = await prisma.user.findUnique({
       where: { id },
@@ -51,9 +46,12 @@ const sendMessage = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const getMessages = async (req: AuthRequest, res: Response) => {
+const getMessages = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user as User;
+    const id = req.user?.id;
+    if (!id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const { senderId } = req.params;
     if (!senderId) {
       return res.status(400).json({ message: "Sender ID is required" });
@@ -78,9 +76,12 @@ const getMessages = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Error getting messages", error });
   }
 };
-const getAllSenders = async (req: AuthRequest, res: Response) => {
+const getAllSenders = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user as User;
+    const id = req.user?.id;
+    if (!id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const senders = await prisma.message.findMany({
       where: { receiverId: id },
       select: {
@@ -94,9 +95,9 @@ const getAllSenders = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const getAllMessagesFromSender = async (req: AuthRequest, res: Response) => {
+const getAllMessagesFromSender = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user as User;
+    const id = req.user?.id;
     if (!id) {
       return res.status(400).json({ message: "User ID is required" });
     }
@@ -119,12 +120,12 @@ const getAllMessagesFromSender = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const getAllMessagesInConversation = async (
-  req: AuthRequest,
-  res: Response
-) => {
+const getAllMessagesInConversation = async (req: Request, res: Response) => {
   try {
-    const { id } = req.user as User;
+    const id = req.user?.id;
+    if (!id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const { senderId } = req.params;
     if (!senderId) {
       return res.status(400).json({ message: "Sender ID is required" });
